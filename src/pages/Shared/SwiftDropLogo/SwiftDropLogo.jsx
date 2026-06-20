@@ -5,7 +5,7 @@ const SwiftDropLogo = () => {
     return (
         <div>
             <img src={logo} alt="" />
-            <p>Profast</p>
+            <p>SwiftDrop BD</p>
         </div>
     );
 };
