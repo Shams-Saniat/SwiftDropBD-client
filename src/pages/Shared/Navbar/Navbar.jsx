@@ -50,7 +50,7 @@ const Navbar = () => {
                 }
                 <Link 
                 className='btn btn-primary text-black mx-3' 
-                to="/beARider">Be a Rider</Link>
+                to="/rider">Be a Rider</Link>
             </div>
         </div>
     );
