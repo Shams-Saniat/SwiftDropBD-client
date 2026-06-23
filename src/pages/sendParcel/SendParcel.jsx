@@ -1,6 +1,7 @@
 import React from 'react';
 import { useForm, useWatch } from 'react-hook-form';
 import { useLoaderData } from 'react-router';
+import Swal from 'sweetalert2';
 
 const SendParcel = () => {
     const { register, handleSubmit, control, formState: { errors } } = useForm();
@@ -8,8 +9,8 @@ const SendParcel = () => {
     const regionsDuplicate = serviceCenters.map(c => c.region);
     const regions = [...new Set(regionsDuplicate)];
     // explore useMemo useCallback
-    const senderRegion = useWatch({control, name: 'senderRegion'});
-    const receiverRegion = useWatch({control, name: 'receiverRegion'})
+    const senderRegion = useWatch({ control, name: 'senderRegion' });
+    const receiverRegion = useWatch({ control, name: 'receiverRegion' })
 
     const districtsByRegion = (region) => {
         const regionDistricts = serviceCenters.filter(c => c.region === region);
@@ -19,8 +20,42 @@ const SendParcel = () => {
 
     const handleSendParcel = data => {
         console.log(data);
-        const sameDistrict = data.senderDistrict === data.receiverDistrict;
-        console.log(sameDistrict);
+        const isDocument = data.parcelType === 'document';
+        const isSameDistrict = data.senderDistrict === data.receiverDistrict;
+        const parcelWeight = parseFloat(data.parcelWeight);
+
+        let cost = 0;
+        if (isDocument) {
+            cost = isSameDistrict ? 60 : 80;
+        }
+        else {
+            if (parcelWeight < 3) {
+                cost = isSameDistrict ? 110 : 150;
+            }
+            else {
+                const minCharge = isSameDistrict ? 110 : 150;
+                const extraWeight = parcelWeight - 3;
+                const extraCharge = isSameDistrict ? extraWeight * 40 : extraWeight * 40 + 40;
+                cost = minCharge + extraCharge;
+            }
+        }
+        console.log('cost', cost);
+
+        Swal.fire({
+            title: "Agree with the cost",
+            text: `You will be charged ${cost} taka`,
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonColor: "#3085d6",
+            cancelButtonColor: "#d33",
+            confirmButtonText: "I agree"
+        }).then((result) => {
+            if (result.isConfirmed) Swal.fire({
+                title: "Deleted!",
+                text: "Your file has been deleted.",
+                icon: "success"
+            });
+        });
     }
 
     return (
@@ -113,26 +148,26 @@ const SendParcel = () => {
                         <input type="email" {...register('receiverEmail')} className="input w-full" placeholder="Receiver Email" />
 
                         {/* Receiver region */}
-                            <fieldset className="fieldset">
-                                <legend className="fieldset-legend">Receiver Regions</legend>
-                                <select {...register('receiverRegion')} defaultValue="Pick a region" className="select">
-                                    <option disabled={true}>Pick a browser</option>
-                                    {
-                                        regions.map((r, i) => <option key={i} value={r}>{r}</option>)
-                                    }
-                                </select>
-                            </fieldset>
+                        <fieldset className="fieldset">
+                            <legend className="fieldset-legend">Receiver Regions</legend>
+                            <select {...register('receiverRegion')} defaultValue="Pick a region" className="select">
+                                <option disabled={true}>Pick a browser</option>
+                                {
+                                    regions.map((r, i) => <option key={i} value={r}>{r}</option>)
+                                }
+                            </select>
+                        </fieldset>
 
                         {/* Receiver District */}
-                            <fieldset className="fieldset">
-                                <legend className="fieldset-legend">Receiver Districts</legend>
-                                <select {...register('receiverDistrict')} defaultValue="Pick a District" className="select">
-                                    <option disabled={true}>Pick a browser</option>
-                                    {
-                                        districtsByRegion(receiverRegion).map((d, i)=> <option key={i} value={d}>{d}</option>)
-                                    }
-                                </select>
-                            </fieldset>    
+                        <fieldset className="fieldset">
+                            <legend className="fieldset-legend">Receiver Districts</legend>
+                            <select {...register('receiverDistrict')} defaultValue="Pick a District" className="select">
+                                <option disabled={true}>Pick a browser</option>
+                                {
+                                    districtsByRegion(receiverRegion).map((d, i) => <option key={i} value={d}>{d}</option>)
+                                }
+                            </select>
+                        </fieldset>
 
                         {/* Receiver Address */}
                         <label className="label mt-4">Receiver Address</label>
