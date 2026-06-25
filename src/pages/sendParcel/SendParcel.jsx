@@ -2,9 +2,19 @@ import React from 'react';
 import { useForm, useWatch } from 'react-hook-form';
 import { useLoaderData } from 'react-router';
 import Swal from 'sweetalert2';
+import useAxiosSecure from '../../hooks/useAxiosSecure';
+import useAuth from '../../hooks/useAuth';
 
 const SendParcel = () => {
-    const { register, handleSubmit, control, formState: { errors } } = useForm();
+    const {
+        register,
+        handleSubmit,
+        control,
+        // formState: { errors } 
+    } = useForm();
+    const { user } = useAuth();
+    const axiosSecure = useAxiosSecure();
+
     const serviceCenters = useLoaderData();
     const regionsDuplicate = serviceCenters.map(c => c.region);
     const regions = [...new Set(regionsDuplicate)];
@@ -50,13 +60,21 @@ const SendParcel = () => {
             cancelButtonColor: "#d33",
             confirmButtonText: "I agree"
         }).then((result) => {
-            if (result.isConfirmed) Swal.fire({
-                title: "Deleted!",
-                text: "Your file has been deleted.",
-                icon: "success"
-            });
+            if (result.isConfirmed) {
+                // save the parcel info to the database
+                axiosSecure.post('/parcels', data)
+                    .then(res => {
+                        console.log('after saving parcel', res.data);
+                    })
+                // Swal.fire({
+                // title: "Deleted!",
+                //    text: "Your file has been deleted.",
+                //        icon: "success"
+
+
+            }
         });
-    }
+    };
 
     return (
         <div>
@@ -94,17 +112,21 @@ const SendParcel = () => {
                             <h4 className="text-2xl font-semibold">Sender Details</h4>
                             {/* Sender Name */}
                             <label className="label">Sender Name</label>
-                            <input type="text" {...register('senderName')} className="input w-full" placeholder="Sender Name" />
+                            <input type="text" {...register('senderName')}
+                                defaultValue={user?.displayName}
+                                className="input w-full" placeholder="Sender Name" />
 
                             {/* Sender Email */}
                             <label className="label">Sender Email</label>
-                            <input type="email" {...register('senderEmail')} className="input w-full" placeholder="Sender Email" />
+                            <input type="email" {...register('senderEmail')}
+                                defaultValue={user?.email}
+                                className="input w-full" placeholder="Sender Email" />
 
                             {/* Sender region */}
                             <fieldset className="fieldset">
                                 <legend className="fieldset-legend">Sender Regions</legend>
                                 <select {...register('senderRegion')} defaultValue="Pick a region" className="select">
-                                    <option disabled={true}>Pick a browser</option>
+                                    <option disabled={true}>Pick a region</option>
                                     {
                                         regions.map((r, i) => <option key={i} value={r}>{r}</option>)
                                     }
@@ -122,7 +144,6 @@ const SendParcel = () => {
                                 </select>
                             </fieldset>
 
-
                             {/* Sender Address */}
                             <label className="label mt-4">Sender Address</label>
                             <input type="text" {...register('senderAddress')} className="input w-full" placeholder="Sender Address" />
@@ -136,6 +157,7 @@ const SendParcel = () => {
                             <input type="text" {...register('PickupInstruction')} className="input w-full" placeholder="Sender Address" />
                         </fieldset>
                     </div>
+
                     {/* receiver details */}
                     <fieldset className="fieldset">
                         <h4 className="text-2xl font-semibold">Receiver Details</h4>
@@ -151,7 +173,7 @@ const SendParcel = () => {
                         <fieldset className="fieldset">
                             <legend className="fieldset-legend">Receiver Regions</legend>
                             <select {...register('receiverRegion')} defaultValue="Pick a region" className="select">
-                                <option disabled={true}>Pick a browser</option>
+                                <option disabled={true}>Pick a region</option>
                                 {
                                     regions.map((r, i) => <option key={i} value={r}>{r}</option>)
                                 }
@@ -162,7 +184,7 @@ const SendParcel = () => {
                         <fieldset className="fieldset">
                             <legend className="fieldset-legend">Receiver Districts</legend>
                             <select {...register('receiverDistrict')} defaultValue="Pick a District" className="select">
-                                <option disabled={true}>Pick a browser</option>
+                                <option disabled={true}>Pick a District</option>
                                 {
                                     districtsByRegion(receiverRegion).map((d, i) => <option key={i} value={d}>{d}</option>)
                                 }
@@ -181,6 +203,7 @@ const SendParcel = () => {
                         <label className="label mt-4">Pickup Instruction</label>
                         <input type="text" {...register('DeliveryInstruction')} className="input w-full" placeholder="Receiver Address" />
                     </fieldset>
+
                     <div>
                         <input type="submit" className='btn btn-primary mt-8 text-black' value="Proceed to Confirm Booking" />
                     </div>
