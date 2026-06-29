@@ -6,12 +6,13 @@ import { FiEdit } from 'react-icons/fi';
 import { CiViewList } from 'react-icons/ci';
 import { RiDeleteBin6Fill } from 'react-icons/ri';
 import Swal from 'sweetalert2';
+import { Link } from 'react-router';
 
 const MyParcels = () => {
     const { user } = useAuth();
     const axiosSecure = useAxiosSecure();
 
-    const { data: parcels = [] } = useQuery({
+    const { data: parcels = [], refetch } = useQuery({
         queryKey: ['my-parcels', user?.email],
         queryFn: async () => {
             const res = await axiosSecure.get(`/parcels?email=${user.email}`);
@@ -38,6 +39,9 @@ const MyParcels = () => {
                         console.log(res.data);
 
                         if (res.data.deletedCount) {
+                            // refresh the data in the UI
+                            refetch();
+
                             Swal.fire({
                                 title: "Deleted!",
                                 text: "Your parcel request has been deleted.",
@@ -61,7 +65,8 @@ const MyParcels = () => {
                             <th></th>
                             <th>Name</th>
                             <th>Cost</th>
-                            <th>Payment Status</th>
+                            <th>Payment</th>
+                            <th>Delivery Status</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
@@ -71,7 +76,17 @@ const MyParcels = () => {
                                 <th>{index + 1}</th>
                                 <td>{parcel.parcelName}</td>
                                 <td>{parcel.cost}</td>
-                                <td>Blue</td>
+                                <td>
+                                    {
+                                        parcel.paymentStatus === 'paid' ?
+                                            <span className='text-green'>Paid</span>
+                                            :
+                                            <Link to={`/dashboard/payment/${parcel._id}`}>
+                                                <button className="btn btn-sm btn-primary text-black">Pay</button>
+                                            </Link>
+                                    }
+                                </td>
+                                <td>{parcel.deliveryStatus}</td>
                                 <td>
                                     <button className='btn btn-square hover:bg-primary'>
                                         <CiViewList />
