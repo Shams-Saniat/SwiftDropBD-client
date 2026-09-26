@@ -6,7 +6,6 @@ import { FiEdit } from 'react-icons/fi';
 import { CiViewList } from 'react-icons/ci';
 import { RiDeleteBin6Fill } from 'react-icons/ri';
 import Swal from 'sweetalert2';
-import { Link } from 'react-router';
 
 const MyParcels = () => {
     const { user } = useAuth();
@@ -20,7 +19,7 @@ const MyParcels = () => {
         }
     })
 
-    const handleParceldelete = id => {
+    const handleParcelDelete = id => {
         console.log(id);
 
         Swal.fire({
@@ -54,6 +53,19 @@ const MyParcels = () => {
         });
     }
 
+    const handlePaymant = async (parcel) => {
+        const paymentInfo = {
+            cost: parcel.cost,
+            parcelId: parcel._id,
+            senderEmail: parcel.senderEmail,
+            parcelName: parcel.parcelName
+        }
+        const res = await axiosSecure.post('/payment-checkout-session', paymentInfo);
+        
+        console.log(res.data.url);
+        window.location.assign(res.data.url);
+    }
+
     return (
         <div>
             <h2>All of my parcels: {parcels.length}</h2>
@@ -81,9 +93,8 @@ const MyParcels = () => {
                                         parcel.paymentStatus === 'paid' ?
                                             <span className='text-green'>Paid</span>
                                             :
-                                            <Link to={`/dashboard/payment/${parcel._id}`}>
-                                                <button className="btn btn-sm btn-primary text-black">Pay</button>
-                                            </Link>
+                                            <button onClick={() => handlePaymant(parcel)} className="btn btn-sm
+                                             btn-primary text-black">Pay</button>
                                     }
                                 </td>
                                 <td>{parcel.deliveryStatus}</td>
@@ -95,7 +106,7 @@ const MyParcels = () => {
                                         <FiEdit />
                                     </button>
                                     <button
-                                        onClick={() => handleParceldelete(parcel._id)}
+                                        onClick={() => handleParcelDelete(parcel._id)}
                                         className='btn btn-square hover:bg-primary'>
                                         <RiDeleteBin6Fill />
                                     </button>
