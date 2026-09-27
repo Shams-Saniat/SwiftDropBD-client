@@ -93,8 +93,7 @@ const MyParcels = () => {
                                         parcel.paymentStatus === 'paid' ?
                                             <span className='text-green'>Paid</span>
                                             :
-                                            <button onClick={() => handlePaymant(parcel)} className="btn btn-sm
-                                             btn-primary text-black">Pay</button>
+                                            <button onClick={() => handlePaymant(parcel)} className="btn btn-sm btn-primary text-black">Pay</button>
                                     }
                                 </td>
                                 <td>{parcel.deliveryStatus}</td>
